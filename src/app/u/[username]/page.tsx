@@ -20,9 +20,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-const profile = () => {
-  const { completion, handleSubmit, isLoading } = useCompletion({
+const UserProfilePage = () => {
+  const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/suggest-messages",
+    experimental_throttle: 50
   });
   const params = useParams<{ username: string }>();
   const { username } = params;
@@ -53,50 +54,61 @@ const profile = () => {
   };
   return (
     <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            name="content"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Message</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Please enter your message here! "
-                    {...field}
-                   
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <div className="flex justify-center items-center flex-col mt-10 mb-10 p-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              name="content"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Message</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Please enter your message here! "
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <Button type="submit" disabled={isSending}>
-            {isSending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait!
-              </>
-            ) : (
-              "Send it!"
-            )}
-          </Button>
-        </form>
-      </Form>
+            <Button type="submit" disabled={isSending}>
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait!
+                </>
+              ) : (
+                "Send it!"
+              )}
+            </Button>
+          </form>
+        </Form>
+      </div>
 
-      <h1 className="text-center text-4xl">Message Suggestions</h1>
-      <form onSubmit={handleSubmit}>
-        <Button>Suggest Messages</Button>
-      </form>
-      {isLoading ? (<Loader2 type="spin"></Loader2>) : <></>
-      }
+      <div className="flex flex-col items-center space-y-4 ml-8">
+        <h1 className="text-center text-4xl">Message Suggestions</h1>
+        <Button
+          onClick={(e) => {
+            
+            return complete("");
+          }}
+          disabled={isLoading}
+        >
+          Suggest Messages
+        </Button>
+        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <></>}
+
         
-          <div className="justify-center">{completion}</div>
-        
-      
+        <div className="justify-center">
+          
+          
+
+        </div>
+      </div>
     </>
   );
 };
 
-export default profile;
+export default UserProfilePage;
