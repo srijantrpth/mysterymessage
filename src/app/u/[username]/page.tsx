@@ -21,9 +21,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 const UserProfilePage = () => {
+  const initialMessageString: string = "What's your favorite movie?||Do you have any pets?||What's your dream job?";
   const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/suggest-messages",
-    experimental_throttle: 50
+    initialCompletion: initialMessageString,
   });
   const params = useParams<{ username: string }>();
   const { username } = params;
@@ -33,7 +34,16 @@ const UserProfilePage = () => {
       content: "",
     },
   });
+  const messageContent = form.watch("content");
+
   const [isSending, setIsSending] = useState(false);
+  const fetchSuggestedMessages = async () => {
+    try {
+      await complete("");
+    } catch (err) {
+      console.error("Error fetching suggested messages:", err);
+    }
+  };
   const onSubmit = async (data: z.infer<typeof messageSchema>) => {
     setIsSending(true);
     try {
@@ -42,6 +52,7 @@ const UserProfilePage = () => {
         content: data.content,
       });
       toast.success(response.data.message);
+      form.reset({ ...form.getValues(), content: "" });
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast.error(
@@ -90,21 +101,31 @@ const UserProfilePage = () => {
       <div className="flex flex-col items-center space-y-4 ml-8">
         <h1 className="text-center text-4xl">Message Suggestions</h1>
         <Button
-          onClick={(e) => {
-            
-            return complete("");
-          }}
+          onClick={fetchSuggestedMessages}
           disabled={isLoading}
         >
           Suggest Messages
         </Button>
-        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <></>}
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 
-        
-        <div className="justify-center">
-          
-          
-
+        <div className="justify-center w-full mt-4">
+          {error ? (
+            <p className="text-red-500">{error.message}</p>
+          ) : (
+            completion &&
+            completion
+              .split("||")
+              .map((msg, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  className="mb-2 w-full text-left"
+                  onClick={() => form.setValue("content", msg.trim())}
+                >
+                  {msg.trim()}
+                </Button>
+              ))
+          )}
         </div>
       </div>
     </>
